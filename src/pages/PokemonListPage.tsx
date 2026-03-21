@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { usePokemonList } from '../hooks/usePokemon'
 import { PokemonCard } from '../components/PokemonCard'
+import { AuthButton } from '../components/AuthButton'
 
 export function PokemonListPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -34,8 +35,13 @@ export function PokemonListPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-8 mb-8">
-          <h1 className="text-5xl font-bold text-white">Pokédex</h1>
-          <p className="text-red-100 mt-2">Discover and explore all Pokémon</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-5xl font-bold text-white">Pokédex</h1>
+              <p className="text-red-100 mt-2">Discover and explore all Pokémon</p>
+            </div>
+            <AuthButton />
+          </div>
         </div>
 
         {isLoading ? (
