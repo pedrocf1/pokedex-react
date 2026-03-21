@@ -81,6 +81,33 @@ export const usePokemonType = (url: string | undefined) =>
     enabled: !!url,
   })
 
+export interface Encounter {
+  location_area: { name: string; url: string }
+  version_details: Array<{
+    version: { name: string }
+    max_chance: number
+    encounter_details: Array<{
+      chance: number
+      method: { name: string }
+      min_level: number
+      max_level: number
+    }>
+  }>
+}
+
+const fetchEncounters = async (id: number): Promise<Encounter[]> => {
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/encounters`)
+  if (!response.ok) throw new Error('Failed to fetch encounters')
+  return response.json()
+}
+
+export const usePokemonEncounters = (id: number | undefined) =>
+  useQuery({
+    queryKey: ['pokemonEncounters', id],
+    queryFn: () => fetchEncounters(id!),
+    enabled: !!id,
+  })
+
 export const usePokemonList = () =>
   useInfiniteQuery({
     queryKey: ['pokemonList'],

@@ -1,6 +1,10 @@
 import { useParams, Link } from 'react-router-dom'
-import { usePokemon, usePokemonType } from '../hooks/usePokemon'
+import { usePokemon, usePokemonType, usePokemonEncounters } from '../hooks/usePokemon'
 import { TYPE_COLORS } from '../utils/typeColors'
+
+function formatLocationName(slug: string): string {
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 const STAT_MAX = 255
 
@@ -28,6 +32,7 @@ export function PokemonDetailPage() {
 
   const firstTypeUrl = pokemon?.types?.[0]?.type?.url
   const { data: typeData, isLoading: typeLoading } = usePokemonType(firstTypeUrl)
+  const { data: encounters, isLoading: encounterLoading } = usePokemonEncounters(pokemon?.id)
 
   const imageUrl = pokemon
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`
@@ -198,6 +203,67 @@ export function PokemonDetailPage() {
               )}
             </div>
           ) : null}
+        </div>
+
+        {/* Encounters */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
+          <h2 className="text-xl font-bold text-white mb-6">Pokémon Encounters</h2>
+          {encounterLoading ? (
+            <p className="text-slate-400 animate-pulse">Loading encounters...</p>
+          ) : !encounters || encounters.length === 0 ? (
+            <p className="text-slate-400 text-center py-4">No encounter data available for this Pokémon.</p>
+          ) : (
+            <div className="space-y-3">
+              {encounters.map((encounter) => {
+                const firstVersion = encounter.version_details[0]
+                const firstDetail = firstVersion?.encounter_details[0]
+                const versions = encounter.version_details.map((v) => v.version.name).join(', ')
+                const otherDetails = firstVersion?.encounter_details.slice(1) ?? []
+                return (
+                  <div
+                    key={encounter.location_area.name}
+                    className="bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:border-blue-400 transition-colors"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-blue-400 font-semibold capitalize">
+                          {formatLocationName(encounter.location_area.name)}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-slate-300 text-sm">
+                          <span className="text-blue-400 font-semibold">Method: </span>
+                          <span className="capitalize">{firstDetail?.method.name ?? 'Unknown'}</span>
+                        </p>
+                        <p className="text-slate-300 text-sm">
+                          <span className="text-blue-400 font-semibold">Chance: </span>
+                          {firstDetail?.chance ?? 'N/A'}%
+                        </p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <p className="text-slate-300 text-sm">
+                          <span className="text-blue-400 font-semibold">Version(s): </span>
+                          <span className="capitalize">{versions}</span>
+                        </p>
+                      </div>
+                      {otherDetails.length > 0 && (
+                        <div className="md:col-span-2">
+                          <p className="text-blue-400 text-sm font-semibold mb-1">Other conditions:</p>
+                          <div className="ml-4 space-y-1">
+                            {otherDetails.map((detail, i) => (
+                              <p key={i} className="text-slate-400 text-xs">
+                                <span className="capitalize">{detail.method.name}</span> — Chance: {detail.chance}%
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
