@@ -11,11 +11,28 @@ export interface Pokemon {
       }
     }
   }
-  types: Array<{
-    type: { name: string }
-  }>
+  types: Array<{ type: { name: string; url: string } }>
   height: number
   weight: number
+  base_experience: number
+  stats: Array<{
+    base_stat: number
+    stat: { name: string }
+  }>
+  abilities: Array<{
+    ability: { name: string }
+    is_hidden: boolean
+  }>
+}
+
+export interface PokemonTypeData {
+  name: string
+  damage_relations: {
+    double_damage_from: Array<{ name: string }>
+    double_damage_to: Array<{ name: string }>
+    half_damage_from: Array<{ name: string }>
+    half_damage_to: Array<{ name: string }>
+  }
 }
 
 export interface PokemonListItem {
@@ -49,6 +66,19 @@ export const usePokemon = (name: string) =>
   useQuery({
     queryKey: ['pokemon', name],
     queryFn: () => fetchPokemon(name),
+  })
+
+const fetchPokemonType = async (url: string): Promise<PokemonTypeData> => {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error('Failed to fetch type data')
+  return response.json()
+}
+
+export const usePokemonType = (url: string | undefined) =>
+  useQuery({
+    queryKey: ['pokemonType', url],
+    queryFn: () => fetchPokemonType(url!),
+    enabled: !!url,
   })
 
 export const usePokemonList = () =>

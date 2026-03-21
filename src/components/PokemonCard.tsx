@@ -1,25 +1,6 @@
+import { Link } from 'react-router-dom'
 import { usePokemon } from '../hooks/usePokemon'
-
-const TYPE_COLORS: Record<string, string> = {
-  fire: 'bg-orange-500',
-  water: 'bg-blue-500',
-  grass: 'bg-green-500',
-  electric: 'bg-yellow-400 text-gray-800',
-  ice: 'bg-cyan-400',
-  fighting: 'bg-red-700',
-  poison: 'bg-purple-500',
-  ground: 'bg-yellow-600',
-  flying: 'bg-indigo-400',
-  psychic: 'bg-pink-500',
-  bug: 'bg-lime-500',
-  rock: 'bg-stone-500',
-  ghost: 'bg-violet-700',
-  dragon: 'bg-indigo-700',
-  dark: 'bg-gray-700',
-  steel: 'bg-slate-400',
-  fairy: 'bg-pink-300 text-gray-800',
-  normal: 'bg-gray-400 text-gray-800',
-}
+import { TYPE_COLORS } from '../utils/typeColors'
 
 interface PokemonCardProps {
   name: string
@@ -51,7 +32,7 @@ export function PokemonCard({ name, url }: PokemonCardProps) {
   }
 
   return (
-    <div className="group flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-lg cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-blue-500/20 hover:shadow-xl">
+    <Link to={`/pokemon/${data.name}`} className="group flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-lg cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-blue-500/20 hover:shadow-xl no-underline">
       <div className="flex items-center justify-center bg-slate-700/50 rounded-lg w-full h-36 mb-3 overflow-hidden">
         <img
           src={imageUrl}
@@ -73,6 +54,6 @@ export function PokemonCard({ name, url }: PokemonCardProps) {
           </span>
         ))}
       </div>
-    </div>
+    </Link>
   )
 }
