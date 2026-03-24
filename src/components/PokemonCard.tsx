@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { usePokemon } from '../hooks/usePokemon'
+import { FavoriteButton } from './FavoriteButton'
 import { TYPE_COLORS } from '../utils/typeColors'
 
 interface PokemonCardProps {
@@ -32,7 +33,8 @@ export function PokemonCard({ name, url }: PokemonCardProps) {
   }
 
   return (
-    <Link to={`/pokemon/${data.name}`} className="group flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-lg cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-blue-500/20 hover:shadow-xl no-underline">
+    <Link to={`/pokemon/${data.name}`} className="group relative flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-lg cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-blue-500/20 hover:shadow-xl no-underline">
+      <FavoriteButton pokemonId={data.id} pokemonName={data.name} />
       <div className="flex items-center justify-center bg-slate-700/50 rounded-lg w-full h-36 mb-3 overflow-hidden">
         <img
           src={imageUrl}

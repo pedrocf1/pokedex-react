@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { usePokemon, usePokemonType, usePokemonEncounters } from '../hooks/usePokemon'
+import { FavoriteButton } from '../components/FavoriteButton'
 import { TYPE_COLORS } from '../utils/typeColors'
 
 function formatLocationName(slug: string): string {
@@ -69,7 +70,7 @@ export function PokemonDetailPage() {
         <BackButton />
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8 mb-8">
+        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8 mb-8 relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
             <div className="flex-1">
               <p className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Pokémon Details</p>
@@ -78,7 +79,8 @@ export function PokemonDetailPage() {
                 ID: <span className="text-blue-400 font-semibold">#{String(pokemon.id).padStart(3, '0')}</span>
               </p>
             </div>
-            <div className="flex items-center justify-center bg-slate-800/50 rounded-2xl p-4 w-48 h-48 shrink-0">
+            <div className="flex items-center justify-center bg-slate-800/50 rounded-2xl p-4 w-48 h-48 shrink-0 relative">
+              <FavoriteButton pokemonId={pokemon.id} pokemonName={pokemon.name} />
               <img
                 src={imageUrl}
                 alt={pokemon.name}

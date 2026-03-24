@@ -57,3 +57,8 @@ export interface Encounter {
     }>
   }>
 }
+export interface FavoritePokemon {
+  id: number
+  userId: number
+  pokemonId: number
+}
