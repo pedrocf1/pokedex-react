@@ -1,33 +1,9 @@
-import styled from 'styled-components'
 import { useFavorite } from '../context/FavoriteContext'
 
 interface FavoriteButtonProps {
   pokemonId: number
   pokemonName: string
 }
-
-const StyledButton = styled.button<{ $isFavorite: boolean }>`
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 10;
-  font-size: 1.5rem;
-  line-height: 1;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.2s ease-in-out;
-  color: ${props => props.$isFavorite ? '#facc15' : '#cbd5e1'};
-  padding: 0;
-
-  &:hover {
-    color: ${props => props.$isFavorite ? '#eab308' : '#94a3b8'};
-  }
-
-  &:active {
-    transform: scale(1.1);
-  }
-`
 
 export function FavoriteButton({ pokemonId, pokemonName }: FavoriteButtonProps) {
   const { isFavorite, add, remove } = useFavorite()
@@ -46,13 +22,22 @@ export function FavoriteButton({ pokemonId, pokemonName }: FavoriteButtonProps) 
   const favorite = isFavorite(pokemonId)
 
   return (
-    <StyledButton
+    <button
       type="button"
       onClick={handleToggle}
-      $isFavorite={favorite}
       aria-label="Toggle favorite"
+      className="absolute top-3 right-3 z-10 text-2xl leading-none bg-none border-none cursor-pointer transition-colors p-0 active:scale-110"
+      style={{
+        color: favorite ? '#facc15' : '#cbd5e1',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = favorite ? '#eab308' : '#94a3b8'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = favorite ? '#facc15' : '#cbd5e1'
+      }}
     >
       {favorite ? '★' : '☆'}
-    </StyledButton>
+    </button>
   )
 }
