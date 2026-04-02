@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { usePokemon, usePokemonType, usePokemonEncounters } from '../hooks/usePokemon'
 import { FavoriteButton } from '../components/FavoriteButton'
 import { TYPE_COLORS } from '../utils/typeColors'
@@ -10,12 +11,12 @@ function formatLocationName(slug: string): string {
 const STAT_MAX = 255
 
 const STAT_COLORS: Record<string, string> = {
-  hp: 'from-green-500 to-green-400',
-  attack: 'from-red-500 to-orange-400',
-  defense: 'from-blue-500 to-blue-400',
-  'special-attack': 'from-purple-500 to-purple-400',
-  'special-defense': 'from-cyan-500 to-cyan-400',
-  speed: 'from-yellow-500 to-yellow-400',
+  hp: 'linear-gradient(to right, #22c55e, #4ade80)',
+  attack: 'linear-gradient(to right, #ef4444, #fb7185)',
+  defense: 'linear-gradient(to right, #3b82f6, #60a5fa)',
+  'special-attack': 'linear-gradient(to right, #a855f7, #c084fc)',
+  'special-defense': 'linear-gradient(to right, #06b6d4, #22d3ee)',
+  speed: 'linear-gradient(to right, #eab308, #fbbf24)',
 }
 
 const STAT_LABELS: Record<string, string> = {
@@ -26,6 +27,438 @@ const STAT_LABELS: Record<string, string> = {
   'special-defense': 'Sp. Def',
   speed: 'Speed',
 }
+
+// Styled Components
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f0f1e, #1a1a2e, #0f0f1e);
+  padding: 1.5rem 1rem;
+`
+
+const ContentWrapper = styled.div`
+  max-width: 84rem;
+  margin: 0 auto;
+`
+
+const LoadingContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f0f1e, #1a1a2e, #0f0f1e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const LoadingContent = styled.div`
+  text-align: center;
+`
+
+const Spinner = styled.div`
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  width: 4rem;
+  height: 4rem;
+  border: 4px solid #3b82f6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`
+
+const LoadingText = styled.p`
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+`
+
+const ErrorContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f0f1e, #1a1a2e, #0f0f1e);
+  padding: 2rem 1rem;
+`
+
+const ErrorContent = styled.div`
+  max-width: 56rem;
+  margin: 0 auto;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  color: #fca5a5;
+`
+
+const ErrorTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #fca5a5;
+`
+
+const BackButtonLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #60a5fa;
+  transition: color 0.3s ease;
+  margin-bottom: 1.5rem;
+  text-decoration: none;
+
+  &:hover {
+    color: #93c5fd;
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+`
+
+const Header = styled.div`
+  background: linear-gradient(to right, rgba(37, 99, 235, 0.2), rgba(147, 51, 234, 0.2));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 1.5rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+`
+
+const HeaderContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    align-items: center;
+  }
+`
+
+const HeaderInfo = styled.div`
+  flex: 1;
+`
+
+const HeaderLabel = styled.p`
+  color: #60a5fa;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`
+
+const PokemonTitle = styled.h1`
+  font-size: 3.75rem;
+  font-weight: bold;
+  color: #fff;
+  text-transform: capitalize;
+  margin-top: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 2.25rem;
+  }`
+
+const PokemonID = styled.p`
+  color: #cbd5e1;
+  font-size: 1.125rem;
+  margin-top: 0.5rem;
+`
+
+const IDValue = styled.span`
+  color: #60a5fa;
+  font-weight: 600;
+`
+
+const ImageBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(30, 41, 59, 0.5);
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 12rem;
+  height: 12rem;
+  position: relative;
+  flex-shrink: 0;
+`
+
+const PokemonImage = styled.img`
+  width: 10rem;
+  height: 10rem;
+  object-fit: contain;
+  filter: drop-shadow(0 25px 50px -12px rgba(0, 0, 0, 0.5));
+`
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+const Card = styled.div`
+  background-color: rgba(30, 41, 59, 0.5);
+  border: 1px solid #475569;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+`
+
+const CardTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 1rem;
+`
+
+const PhysicalStatsSpace = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
+const PhysicalRowWrapper = styled.div`
+  background-color: rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+`
+
+const PhysicalRowContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+`
+
+const PhysicalLabel = styled.span`
+  color: #cbd5e1;
+`
+
+const PhysicalValue = styled.span`
+  color: #fff;
+  font-weight: 600;
+`
+
+const TypesSpace = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`
+
+const TypeBadgeWrapper = styled.div<{ colorClass: string }>`
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  ${(props) => props.colorClass}
+`
+
+const TypeName = styled.span`
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #fff;
+`
+
+const AbilitiesSpace = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`
+
+const AbilityBox = styled.div`
+  background-color: rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border-left: 4px solid #3b82f6;
+`
+
+const AbilityName = styled.div`
+  text-transform: capitalize;
+  color: #fff;
+  font-weight: 600;
+`
+
+const HiddenAbilityBadge = styled.span`
+  font-size: 0.75rem;
+  background-color: rgba(234, 179, 8, 0.3);
+  color: #fcd34d;
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+`
+
+const StatsCard = styled(Card)`
+  grid-column: 1 / -1;
+`
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+`
+
+const StatItem = styled.div``
+
+const StatLabelRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+`
+
+const StatLabelName = styled.span`
+  color: #cbd5e1;
+`
+
+const StatValue = styled.span`
+  color: #fff;
+  font-weight: 600;
+`
+
+const StatBarContainer = styled.div`
+  width: 100%;
+  background-color: #475569;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+`
+
+const StatBar = styled.div<{ width: number; gradient: string }>`
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.7s ease;
+  width: ${(props) => props.width}%;
+  background: ${(props) => props.gradient};
+`
+
+const TypeEffectivenessCard = styled(Card)`
+  grid-column: 1 / -1;
+`
+
+const LoadingMessage = styled.p`
+  color: #94a3b8;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+`
+
+const EffectivenessGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+`
+
+const DamageGroupWrapper = styled.div<{ bgColor: string; borderColor: string }>`
+  background-color: ${(props) => props.bgColor};
+  border-left: 4px solid;
+  border-color: ${(props) => props.borderColor};
+  border-radius: 0.5rem;
+  padding: 1rem;
+`
+
+const DamageGroupTitle = styled.h4`
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+`
+
+const TypeBadgesGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`
+
+const DamageTypeBadge = styled.span<{ badgeColor: string }>`
+  ${(props) => props.badgeColor}
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  text-transform: capitalize;
+`
+
+const EncountersCard = styled(Card)`
+  grid-column: 1 / -1;
+`
+
+const EncountersSpace = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`
+
+const EncounterItem = styled.div`
+  background-color: rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #475569;
+  transition: border-color 0.3s ease;
+
+  &:hover {
+    border-color: #60a5fa;
+  }
+`
+
+const EncounterGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+`
+
+const EncounterLocation = styled.p`
+  color: #60a5fa;
+  font-weight: 600;
+  text-transform: capitalize;
+`
+
+const EncounterDetail = styled.p`
+  color: #cbd5e1;
+  font-size: 0.875rem;
+`
+
+const EncounterLabel = styled.span`
+  color: #60a5fa;
+  font-weight: 600;
+`
+
+const EncounterFullWidth = styled.div`
+  grid-column: 1 / -1;
+`
+
+const OtherConditionsTitle = styled.p`
+  color: #60a5fa;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+`
+
+const OtherConditionsList = styled.div`
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`
+
+const OtherConditionItem = styled.p`
+  color: #6b7280;
+  font-size: 0.75rem;
+`
 
 export function PokemonDetailPage() {
   const { name } = useParams<{ name: string }>()
@@ -41,259 +474,252 @@ export function PokemonDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75 mb-4" />
-          <p className="text-white text-xl font-semibold">Loading Pokémon details...</p>
-        </div>
-      </div>
+      <LoadingContainer>
+        <LoadingContent>
+          <Spinner />
+          <LoadingText>Loading Pokémon details...</LoadingText>
+        </LoadingContent>
+      </LoadingContainer>
     )
   }
 
   if (isError || !pokemon) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <ErrorContainer>
+        <ContentWrapper>
           <BackButton />
-          <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-8 text-red-300">
-            <h2 className="text-2xl font-bold mb-2">Error Loading Pokémon</h2>
+          <ErrorContent>
+            <ErrorTitle>Error Loading Pokémon</ErrorTitle>
             <p>Failed to load data for "{name}".</p>
-          </div>
-        </div>
-      </div>
+          </ErrorContent>
+        </ContentWrapper>
+      </ErrorContainer>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 py-6">
-      <div className="max-w-6xl mx-auto">
+    <PageContainer>
+      <ContentWrapper>
         <BackButton />
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8 mb-8 relative">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-            <div className="flex-1">
-              <p className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Pokémon Details</p>
-              <h1 className="text-5xl md:text-6xl font-bold text-white capitalize mt-2">{pokemon.name}</h1>
-              <p className="text-slate-300 text-lg mt-2">
-                ID: <span className="text-blue-400 font-semibold">#{String(pokemon.id).padStart(3, '0')}</span>
-              </p>
-            </div>
-            <div className="flex items-center justify-center bg-slate-800/50 rounded-2xl p-4 w-48 h-48 shrink-0 relative">
+        <Header>
+          <HeaderContent>
+            <HeaderInfo>
+              <HeaderLabel>Pokémon Details</HeaderLabel>
+              <PokemonTitle>{pokemon.name}</PokemonTitle>
+              <PokemonID>
+                ID: <IDValue>#{String(pokemon.id).padStart(3, '0')}</IDValue>
+              </PokemonID>
+            </HeaderInfo>
+            <ImageBox>
               <FavoriteButton pokemonId={pokemon.id} pokemonName={pokemon.name} />
-              <img
+              <PokemonImage
                 src={imageUrl}
                 alt={pokemon.name}
-                className="w-40 h-40 object-contain drop-shadow-2xl"
               />
-            </div>
-          </div>
-        </div>
+            </ImageBox>
+          </HeaderContent>
+        </Header>
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <GridContainer>
           {/* Physical Stats */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Physical Stats</h2>
-            <div className="space-y-2">
+          <Card>
+            <CardTitle>Physical Stats</CardTitle>
+            <PhysicalStatsSpace>
               <PhysicalRow label="Height" value={`${(pokemon.height / 10).toFixed(1)} m`} />
               <PhysicalRow label="Weight" value={`${(pokemon.weight / 10).toFixed(1)} kg`} />
               {pokemon.base_experience != null && (
                 <PhysicalRow label="Base Exp" value={String(pokemon.base_experience)} />
               )}
-            </div>
-          </div>
+            </PhysicalStatsSpace>
+          </Card>
 
           {/* Types */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Types</h2>
-            <div className="space-y-3">
+          <Card>
+            <CardTitle>Types</CardTitle>
+            <TypesSpace>
               {pokemon.types.map(({ type }) => (
-                <div
+                <TypeBadgeWrapper
                   key={type.name}
-                  className={`rounded-full px-4 py-2 flex items-center justify-between ${TYPE_COLORS[type.name] ?? 'bg-gray-500'}`}
+                  colorClass={TYPE_COLORS[type.name] ?? 'background-color: #6b7280;'}
                 >
-                  <span className="font-semibold capitalize text-white">{type.name}</span>
-                </div>
+                  <TypeName>{type.name}</TypeName>
+                </TypeBadgeWrapper>
               ))}
-            </div>
-          </div>
+            </TypesSpace>
+          </Card>
 
           {/* Abilities */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Abilities</h2>
-            <div className="space-y-3">
+          <Card>
+            <CardTitle>Abilities</CardTitle>
+            <AbilitiesSpace>
               {pokemon.abilities.map(({ ability, is_hidden }) => (
-                <div key={ability.name} className="bg-slate-700/50 rounded-lg p-4 border-l-4 border-blue-500">
-                  <div className="capitalize text-white font-semibold">{ability.name}</div>
+                <AbilityBox key={ability.name}>
+                  <AbilityName>{ability.name}</AbilityName>
                   {is_hidden && (
-                    <span className="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded mt-2 inline-block">
+                    <HiddenAbilityBadge>
                       Hidden Ability
-                    </span>
+                    </HiddenAbilityBadge>
                   )}
-                </div>
+                </AbilityBox>
               ))}
-            </div>
-          </div>
-        </div>
+            </AbilitiesSpace>
+          </Card>
+        </GridContainer>
 
         {/* Base Stats */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-6">Base Stats</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+        <StatsCard>
+          <CardTitle>Base Stats</CardTitle>
+          <StatsGrid>
             {pokemon.stats.map(({ stat, base_stat }) => (
-              <div key={stat.name}>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-300">{STAT_LABELS[stat.name] ?? stat.name}</span>
-                  <span className="text-white font-semibold">{base_stat}</span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div
-                    className={`bg-gradient-to-r ${STAT_COLORS[stat.name] ?? 'from-blue-500 to-blue-400'} h-2 rounded-full transition-all duration-700`}
-                    style={{ width: `${(base_stat / STAT_MAX) * 100}%` }}
+              <StatItem key={stat.name}>
+                <StatLabelRow>
+                  <StatLabelName>{STAT_LABELS[stat.name] ?? stat.name}</StatLabelName>
+                  <StatValue>{base_stat}</StatValue>
+                </StatLabelRow>
+                <StatBarContainer>
+                  <StatBar 
+                    width={(base_stat / STAT_MAX) * 100}
+                    gradient={STAT_COLORS[stat.name] ?? 'linear-gradient(to right, #3b82f6, #60a5fa)'}
                   />
-                </div>
-              </div>
+                </StatBarContainer>
+              </StatItem>
             ))}
-          </div>
-        </div>
+          </StatsGrid>
+        </StatsCard>
 
         {/* Type Effectiveness */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 capitalize">
+        <TypeEffectivenessCard>
+          <CardTitle>
             {typeData ? `${typeData.name} ` : ''}Type Effectiveness
-          </h2>
+          </CardTitle>
           {typeLoading ? (
-            <p className="text-slate-400 animate-pulse">Loading type matchups...</p>
+            <LoadingMessage>Loading type matchups...</LoadingMessage>
           ) : typeData ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <EffectivenessGrid>
               {typeData.damage_relations.double_damage_from.length > 0 && (
                 <DamageGroup
                   title="Weak Against (2×)"
                   types={typeData.damage_relations.double_damage_from}
-                  borderColor="border-red-500"
-                  bgColor="bg-red-500/20"
-                  badgeColor="bg-red-600/30 text-red-200"
+                  borderColor="#ef4444"
+                  bgColor="rgba(239, 68, 68, 0.2)"
+                  badgeColor="background-color: rgba(239, 68, 68, 0.3); color: #fca5a5;"
                 />
               )}
               {typeData.damage_relations.double_damage_to.length > 0 && (
                 <DamageGroup
                   title="Strong Against (2×)"
                   types={typeData.damage_relations.double_damage_to}
-                  borderColor="border-green-500"
-                  bgColor="bg-green-500/20"
-                  badgeColor="bg-green-600/30 text-green-200"
+                  borderColor="#22c55e"
+                  bgColor="rgba(34, 197, 94, 0.2)"
+                  badgeColor="background-color: rgba(34, 197, 94, 0.3); color: #86efac;"
                 />
               )}
               {typeData.damage_relations.half_damage_from.length > 0 && (
                 <DamageGroup
                   title="Resists Damage From (½×)"
                   types={typeData.damage_relations.half_damage_from}
-                  borderColor="border-blue-500"
-                  bgColor="bg-blue-500/20"
-                  badgeColor="bg-blue-600/30 text-blue-200"
+                  borderColor="#3b82f6"
+                  bgColor="rgba(59, 130, 246, 0.2)"
+                  badgeColor="background-color: rgba(59, 130, 246, 0.3); color: #93c5fd;"
                 />
               )}
               {typeData.damage_relations.half_damage_to.length > 0 && (
                 <DamageGroup
                   title="Deal Less Damage To (½×)"
                   types={typeData.damage_relations.half_damage_to}
-                  borderColor="border-purple-500"
-                  bgColor="bg-purple-500/20"
-                  badgeColor="bg-purple-600/30 text-purple-200"
+                  borderColor="#a855f7"
+                  bgColor="rgba(168, 85, 247, 0.2)"
+                  badgeColor="background-color: rgba(168, 85, 247, 0.3); color: #d8b4fe;"
                 />
               )}
-            </div>
+            </EffectivenessGrid>
           ) : null}
-        </div>
+        </TypeEffectivenessCard>
 
         {/* Encounters */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">Pokémon Encounters</h2>
+        <EncountersCard>
+          <CardTitle>Pokémon Encounters</CardTitle>
           {encounterLoading ? (
-            <p className="text-slate-400 animate-pulse">Loading encounters...</p>
+            <LoadingMessage>Loading encounters...</LoadingMessage>
           ) : !encounters || encounters.length === 0 ? (
-            <p className="text-slate-400 text-center py-4">No encounter data available for this Pokémon.</p>
+            <p style={{ color: '#94a3b8', textAlign: 'center', paddingTop: '1rem', paddingBottom: '1rem' }}>No encounter data available for this Pokémon.</p>
           ) : (
-            <div className="space-y-3">
+            <EncountersSpace>
               {encounters.map((encounter) => {
                 const firstVersion = encounter.version_details[0]
                 const firstDetail = firstVersion?.encounter_details[0]
                 const versions = encounter.version_details.map((v) => v.version.name).join(', ')
                 const otherDetails = firstVersion?.encounter_details.slice(1) ?? []
                 return (
-                  <div
-                    key={encounter.location_area.name}
-                    className="bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:border-blue-400 transition-colors"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <EncounterItem key={encounter.location_area.name}>
+                    <EncounterGrid>
                       <div>
-                        <p className="text-blue-400 font-semibold capitalize">
+                        <EncounterLocation>
                           {formatLocationName(encounter.location_area.name)}
-                        </p>
+                        </EncounterLocation>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-slate-300 text-sm">
-                          <span className="text-blue-400 font-semibold">Method: </span>
-                          <span className="capitalize">{firstDetail?.method.name ?? 'Unknown'}</span>
-                        </p>
-                        <p className="text-slate-300 text-sm">
-                          <span className="text-blue-400 font-semibold">Chance: </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <EncounterDetail>
+                          <EncounterLabel>Method: </EncounterLabel>
+                          <span style={{ textTransform: 'capitalize' }}>{firstDetail?.method.name ?? 'Unknown'}</span>
+                        </EncounterDetail>
+                        <EncounterDetail>
+                          <EncounterLabel>Chance: </EncounterLabel>
                           {firstDetail?.chance ?? 'N/A'}%
-                        </p>
+                        </EncounterDetail>
                       </div>
-                      <div className="md:col-span-2">
-                        <p className="text-slate-300 text-sm">
-                          <span className="text-blue-400 font-semibold">Version(s): </span>
-                          <span className="capitalize">{versions}</span>
-                        </p>
-                      </div>
+                      <EncounterFullWidth>
+                        <EncounterDetail>
+                          <EncounterLabel>Version(s): </EncounterLabel>
+                          <span style={{ textTransform: 'capitalize' }}>{versions}</span>
+                        </EncounterDetail>
+                      </EncounterFullWidth>
                       {otherDetails.length > 0 && (
-                        <div className="md:col-span-2">
-                          <p className="text-blue-400 text-sm font-semibold mb-1">Other conditions:</p>
-                          <div className="ml-4 space-y-1">
+                        <EncounterFullWidth>
+                          <OtherConditionsTitle>Other conditions:</OtherConditionsTitle>
+                          <OtherConditionsList>
                             {otherDetails.map((detail, i) => (
-                              <p key={i} className="text-slate-400 text-xs">
-                                <span className="capitalize">{detail.method.name}</span> — Chance: {detail.chance}%
-                              </p>
+                              <OtherConditionItem key={i}>
+                                <span style={{ textTransform: 'capitalize' }}>{detail.method.name}</span> — Chance: {detail.chance}%
+                              </OtherConditionItem>
                             ))}
-                          </div>
-                        </div>
+                          </OtherConditionsList>
+                        </EncounterFullWidth>
                       )}
-                    </div>
-                  </div>
+                    </EncounterGrid>
+                  </EncounterItem>
                 )
               })}
-            </div>
+            </EncountersSpace>
           )}
-        </div>
-      </div>
-    </div>
+        </EncountersCard>
+      </ContentWrapper>
+    </PageContainer>
   )
 }
 
 function BackButton() {
   return (
-    <Link
-      to="/"
-      className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-6 no-underline"
-    >
+    <BackButtonLink to="/">
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
       </svg>
       Back to List
-    </Link>
+    </BackButtonLink>
   )
 }
 
 function PhysicalRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-slate-700/50 rounded-lg p-4">
-      <div className="flex justify-between text-sm">
-        <span className="text-slate-300">{label}</span>
-        <span className="text-white font-semibold">{value}</span>
-      </div>
-    </div>
+    <PhysicalRowWrapper>
+      <PhysicalRowContent>
+        <PhysicalLabel>{label}</PhysicalLabel>
+        <PhysicalValue>{value}</PhysicalValue>
+      </PhysicalRowContent>
+    </PhysicalRowWrapper>
   )
 }
 
@@ -311,15 +737,15 @@ function DamageGroup({
   badgeColor: string
 }) {
   return (
-    <div className={`${bgColor} border-l-4 ${borderColor} rounded-lg p-4`}>
-      <h4 className="text-white font-semibold mb-3">{title}</h4>
-      <div className="flex flex-wrap gap-2">
+    <DamageGroupWrapper bgColor={bgColor} borderColor={borderColor}>
+      <DamageGroupTitle>{title}</DamageGroupTitle>
+      <TypeBadgesGroup>
         {types.map((t) => (
-          <span key={t.name} className={`${badgeColor} px-3 py-1 rounded-full text-sm capitalize`}>
+          <DamageTypeBadge key={t.name} badgeColor={badgeColor}>
             {t.name}
-          </span>
+          </DamageTypeBadge>
         ))}
-      </div>
-    </div>
+      </TypeBadgesGroup>
+    </DamageGroupWrapper>
   )
 }

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import styled from 'styled-components'
 import { usePokemon } from '../hooks/usePokemon'
 import { FavoriteButton } from './FavoriteButton'
 import { TYPE_COLORS } from '../utils/typeColors'
@@ -8,6 +9,144 @@ interface PokemonCardProps {
   url: string
 }
 
+// Styled Components
+const CardLink = styled(Link)`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid #475569;
+  background-color: #1e293b;
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.2);
+  }
+`
+
+const SkeletonCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid #475569;
+  background-color: #1e293b;
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+`
+
+const SkeletonItem = styled.div`
+  background-color: #334155;
+  border-radius: 0.375rem;
+
+  &.image {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 9999px;
+    margin-bottom: 0.75rem;
+  }
+
+  &.name {
+    height: 1rem;
+    width: 6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &.type {
+    height: 0.75rem;
+    width: 4rem;
+  }
+`
+
+const ErrorCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid #7f1d1d;
+  background-color: #1e293b;
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  color: #f87171;
+  font-size: 0.875rem;
+`
+
+const ImageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 9rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+`
+
+const PokemonImage = styled.img`
+  height: 7rem;
+  width: 7rem;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+
+  ${CardLink}:hover & {
+    transform: scale(1.1);
+  }
+`
+
+const PokemonId = styled.span`
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+`
+
+const PokemonName = styled.h2`
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  text-transform: capitalize;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+
+  ${CardLink}:hover & {
+    color: #60a5fa;
+  }
+`
+
+const TypeContainer = styled.div`
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+`
+
+const TypeBadge = styled.span<{ colorClass: string }>`
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+  text-transform: capitalize;
+  ${(props) => props.colorClass}
+`
+
 export function PokemonCard({ name, url }: PokemonCardProps) {
   const { data, isLoading, isError } = usePokemon(name)
 
@@ -16,46 +155,39 @@ export function PokemonCard({ name, url }: PokemonCardProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow animate-pulse">
-        <div className="w-32 h-32 bg-slate-700 rounded-full mb-3" />
-        <div className="h-4 w-24 bg-slate-700 rounded mb-2" />
-        <div className="h-3 w-16 bg-slate-700 rounded" />
-      </div>
+      <SkeletonCard>
+        <SkeletonItem className="image" />
+        <SkeletonItem className="name" />
+        <SkeletonItem className="type" />
+      </SkeletonCard>
     )
   }
 
   if (isError || !data) {
-    return (
-      <div className="flex flex-col items-center rounded-xl border border-red-800 bg-slate-800 p-4 shadow text-red-400 text-sm">
-        Failed to load
-      </div>
-    )
+    return <ErrorCard>Failed to load</ErrorCard>
   }
 
   return (
-    <Link to={`/pokemon/${data.name}`} className="group relative flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800 p-4 shadow-lg cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-blue-500/20 hover:shadow-xl no-underline">
+    <CardLink to={`/pokemon/${data.name}`}>
       <FavoriteButton pokemonId={data.id} pokemonName={data.name} />
-      <div className="flex items-center justify-center bg-slate-700/50 rounded-lg w-full h-36 mb-3 overflow-hidden">
-        <img
+      <ImageContainer>
+        <PokemonImage
           src={imageUrl}
           alt={data.name}
-          className="h-28 w-28 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
         />
-      </div>
-      <span className="text-slate-400 text-xs mb-1">#{String(data.id).padStart(3, '0')}</span>
-      <h2 className="text-base font-bold text-white capitalize mb-2 group-hover:text-blue-400 transition-colors">
-        {data.name}
-      </h2>
-      <div className="flex gap-1 flex-wrap justify-center">
+      </ImageContainer>
+      <PokemonId>#{String(data.id).padStart(3, '0')}</PokemonId>
+      <PokemonName>{data.name}</PokemonName>
+      <TypeContainer>
         {data.types.map(({ type }) => (
-          <span
+          <TypeBadge
             key={type.name}
-            className={`rounded-full px-2 py-0.5 text-xs font-medium text-white capitalize ${TYPE_COLORS[type.name] ?? 'bg-gray-500'}`}
+            colorClass={TYPE_COLORS[type.name] ?? 'background-color: #6b7280;'}
           >
             {type.name}
-          </span>
+          </TypeBadge>
         ))}
-      </div>
-    </Link>
+      </TypeContainer>
+    </CardLink>
   )
 }
